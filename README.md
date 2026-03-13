@@ -200,29 +200,40 @@ Este parpadeo verifica el correcto funcionamiento del oscilador configurado y la
 ## 2.4 Diagramas
 aqui podemos encontrar el diagrama que utilizamos en proteus : 
 INTOSC (interno): 
+![cristal interno ](imag/proteus_interno.png)
 
 Cristal externo 
-
+![cristal externo ](imag/proteus_cristal.png)
 
 RC 
-
+![rc ](imag/proteus_RC.png)
 
 ## 2.5 Formas de onda
 
 ### INTOSC (interno) 
 
+![onda de cristal interno ](imag/interno_ondas.png)
 
 ### HS
 
+![Onda de cristal externo](imag/cristal_externo_ondas.png)
+
 ## RC
+
+![Onda de RC ](imag/RC_ondas.png)
 
 ## 3. Evidencias de implementación
 INTOSC (interno): 
 
+![implementacion cristal interno](imag/implementacion_interno.jpeg)
+
 Cristal externo 
 
+![implementacion Cristal Externo](imag/implementacion_Cristal_Externo.jpeg)
 
 RC 
+
+![implementacion RC ](imag/implementacion_RC.jpeg)
 
 ## 4. Preguntas
 
