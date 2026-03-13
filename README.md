@@ -12,7 +12,7 @@
 
 ### 2.2 Explicación del código implementado
 a continuacion vamos a explicar el codigo en el cual estamos basandonos para realizar el laboratorio, explicamos por partes para que asi sea mas facil visualizar el codigo 
-
+```
 // ========================== MODO DE OSCILADOR ==========================
 // 1 = INTOSC interno
 // 2 = Cristal externo HS
@@ -31,7 +31,7 @@ a continuacion vamos a explicar el codigo en el cual estamos basandonos para rea
 #else
     #error "Modo de oscilador inválido"
 #endif
-
+```
 En este primer bloque de código, definimos una llamada variable MODEy le asignamos un número que determina el tipo de oscilador a utilizar. A continuación, empleamos condicionales ( if, elify else) para configurar el oscilador según el valor de MODE:
 
 Si MODE es igual a 1, se programa el oscilador interno ( INTIO67), ideal para aplicaciones que no requieren un cristal externo.
@@ -44,7 +44,115 @@ Finalmente, el bloque else genera un error con el mensaje "Modo de oscilador inv
 
 Este enfoque permite seleccionar fácilmente el oscilador mediante el valor de MODE al inicio del código 
 
+```
+// ========================== FRECUENCIA DEL OSCILADOR =====================
+#if MODE == 1 || MODE == 2
+    #if USE_PLL
+        #define _XTAL_FREQ 64000000UL // 16 MHz * 4
+    #else
+        #define _XTAL_FREQ 16000000UL
+    #endif
+#else
+    #define _XTAL_FREQ 200000UL // Ajustar según resistencia + condensador
+#endif
+```
+En el segundo bloque, configuramos la frecuencia del oscilador ( _XTAL_FREQ) según el modo seleccionado y el uso del PLL:
 
+Para los modos 1 (INTOSC interno) y 2 (cristal HS externo), si USE_PLLestá activado, se define una frecuencia de
+64
+ 
+megahercio
+64megahercio(16 MHz multiplicados por 4). De lo contrario, se usa
+16
+ 
+megahercio
+16megahercio.
+
+Para el modo 3 (RC externo), se establece una frecuencia base de
+200
+ 
+kHz
+200kHz, que debe ajustarse manualmente según el valor de la resistencia y condensador utilizados.
+
+Este bloque asegura que el compilador tenga la frecuencia correcta para retrasos y temporizadores
+
+```
+// ========================== FUNCIONES ==========================
+void delay_ms(uint16_t ms) {
+    while(ms--) {
+        __delay_ms(1);
+    }
+}
+
+void init_pins(void) {
+    // RC0 salida blinker
+    TRISCbits.TRISC0 = 0;
+    LATCbits.LATC0 = 0;
+
+    // RA6 salida CLKO solo si modo lo permite
+    if(MODE == 1 || (MODE == 2 && USE_PLL)) {
+        TRISAbits.TRISA6 = 0;
+        LATAbits.LATA6 = 0;
+    }
+}
+
+void init_oscillator(void) {
+#if USE_PLL
+    OSCCONbits.SPLLEN = 1;  // habilita PLL
+#endif
+}
+```
+En este bloque definimos tres funciones esenciales para el control del microcontrolador:
+
+delay_ms(uint16_t ms)
+Crea retardos precisos en milisegundos usando un bucle que invoca la función __delay_ms(1)del compilador el número de veces especificado.
+
+init_pins(void)
+Inicializa los pines de E/S:
+
+Configure RC0 como salida para un LED intermitente (inicia en bajo).
+
+Configura RA6 (CLKO) como salida solo si:
+
+MODE == 1(INTOSC), o
+
+MODE == 2(HS) y USE_PLL está activado.
+
+init_oscillator(void)
+Habilita el PLL si USE_PLLestá definido, configurando el bit SPLLEN = 1en el registro OSCCON.
+
+Estas funciones preparan el hardware para operación estable
+
+```
+// ========================== PROGRAMA PRINCIPAL ==========================
+void main(void) {
+    init_pins();
+    init_oscillator();
+
+    while(1) {
+        // RC0 toggle ? 500 Hz
+        LATCbits.LATC0 = 1;
+        delay_ms(1);
+        LATCbits.LATC0 = 0;
+        delay_ms(1);
+    }
+}
+```
+En la función main(void), el programa principal realiza la inicialización secuencial del hardware y ejecuta un bucle infinito para generar una señal de prueba:
+
+Primero llama a init_pins()para configurar los pines de E/S ya init_oscillator()para estabilizar el reloj. Luego, en el bucle while(1), alterna el pin RC0 (LED intermitente) para generar una frecuencia de 500 Hz :
+
+Enciende RC0 ( LATC0 = 1), espera 1 ms.
+
+Apaga RC0 ( LATC0 = 0), espera 1 ms.
+
+Período total : 2 ms → Frecuencia :
+500
+ 
+Hz
+500Hz.
+
+Este parpadeo verifica el correcto funcionamiento del oscilador configurado y la precisión de los retrasos
 
 
 ### 2.3 Análisis y comparación
